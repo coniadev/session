@@ -1,0 +1,32 @@
+{
+    "name": "conia/session",
+    "description": "Session library",
+    "type": "libary",
+    "license": "MIT",
+    "keywords": [
+        "sessions"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Conia\\Session\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ebene fünf GmbH"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {},
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1",
+        "pestphp/pest": "^1",
+        "vimeo/psalm": "^5"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

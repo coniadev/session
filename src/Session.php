@@ -14,6 +14,7 @@ class Session
 
     public function __construct(
         protected readonly string $name = '',
+        protected readonly array $options = [],
     ) {
     }
 
@@ -27,7 +28,7 @@ class Session
 
                 session_cache_limiter('');
 
-                if (!session_start()) {
+                if (!session_start($this->options)) {
                     // @codeCoverageIgnoreStart
                     throw new RuntimeException(__METHOD__ . 'session_start failed.');
                     // @codeCoverageIgnoreEnd

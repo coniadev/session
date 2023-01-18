@@ -2,12 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Conia\Chuck;
+namespace Conia\Session;
 
-use Conia\Chuck\Exception\OutOfBoundsException;
-use Conia\Chuck\Exception\RuntimeException;
-use Conia\Chuck\Request;
-use Psr\Http\Message\ServerRequestInterface;
+use Conia\Session\OutOfBoundsException;
+use Conia\Session\RuntimeException;
 
 class Session
 {
@@ -16,9 +14,9 @@ class Session
      * @psalm-param non-empty-string $rememberedUriKey
      */
     public function __construct(
-        protected string $name,
-        protected string $flashMessagesKey = 'flash_messages',
-        protected string $rememberedUriKey = 'remembered_uri',
+        protected readonly string $name = '',
+        protected readonly string $flashMessagesKey = 'flash_messages',
+        protected readonly string $rememberedUriKey = 'remembered_uri',
     ) {
     }
 
@@ -33,7 +31,9 @@ class Session
     {
         if (session_status() === PHP_SESSION_NONE) {
             if (!headers_sent($file, $line)) {
-                session_name($this->name);
+                if ($this->name) {
+                    session_name($this->name);
+                }
                 // session_cache_limiter(false);
 
                 if (!session_start()) {
@@ -202,18 +202,18 @@ class Session
         return count($messages) > 0;
     }
 
-    public function rememberRequestUri(
-        Request|ServerRequestInterface $request,
+    public function rememberUri(
+        string $uri,
         int $expires = 3600,
     ): void {
         $rememberedUri = [
-            'uri' => (string)$request->getUri(),
+            'uri' => $uri,
             'expires' => time() + $expires,
         ];
         $_SESSION[$this->rememberedUriKey] = $rememberedUri;
     }
 
-    public function getRememberedUri(): string
+    public function rememberedUri(): string
     {
         /** @var null|array{uri: string, expires: int} */
         $rememberedUri = $_SESSION[$this->rememberedUriKey] ?? null;

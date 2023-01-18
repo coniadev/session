@@ -9,24 +9,14 @@ use Conia\Session\RuntimeException;
 
 class Session
 {
-    /**
-     * @psalm-param non-empty-string $flashMessagesKey
-     * @psalm-param non-empty-string $rememberedUriKey
-     */
+    public const FLASH = 'conia_flash_messages';
+    public const REMEMBER = 'conia_remembered_uri';
+
     public function __construct(
         protected readonly string $name = '',
-        protected readonly string $flashMessagesKey = 'flash_messages',
-        protected readonly string $rememberedUriKey = 'remembered_uri',
     ) {
     }
 
-//  session_set_cookie_params(
-//     int $lifetime_or_options,
-//     ?string $path = null,
-//     ?string $domain = null,
-//     ?bool $secure = null,
-//     ?bool $httponly = null
-// ): bool
     public function start(): void
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -34,7 +24,8 @@ class Session
                 if ($this->name) {
                     session_name($this->name);
                 }
-                // session_cache_limiter(false);
+
+                session_cache_limiter('');
 
                 if (!session_start()) {
                     // @codeCoverageIgnoreStart
@@ -78,6 +69,11 @@ class Session
         session_destroy();
     }
 
+    public function name(): string
+    {
+        return session_name();
+    }
+
     /** @psalm-param non-empty-string $key */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -100,6 +96,10 @@ class Session
      * */
     public function set(string $key, mixed $value): void
     {
+        if (!$this->active()) {
+            throw new RuntimeException('Session not started');
+        }
+
         $_SESSION[$key] = $value;
     }
 
@@ -131,10 +131,12 @@ class Session
         string $message,
         string $queue = 'default',
     ): void {
-        $fmKey = $this->flashMessagesKey;
+        if (!$this->active()) {
+            throw new RuntimeException('Session not started');
+        }
 
-        if (isset($_SESSION[$fmKey]) && is_array($_SESSION[$fmKey])) {
-            $_SESSION[$fmKey][] = [
+        if (isset($_SESSION[self::FLASH]) && is_array($_SESSION[self::FLASH])) {
+            $_SESSION[self::FLASH][] = [
                 'message' => htmlspecialchars($message),
                 'queue' => htmlspecialchars($queue),
             ];
@@ -142,7 +144,7 @@ class Session
             return;
         }
 
-        $_SESSION[$fmKey] = [[
+        $_SESSION[self::FLASH] = [[
             'message' => htmlspecialchars($message),
             'queue' => htmlspecialchars($queue),
         ]];
@@ -150,18 +152,16 @@ class Session
 
     public function popFlashes(?string $queue = null): array
     {
-        $fmKey = $this->flashMessagesKey;
-
         if ($queue === null) {
-            $flashes = $_SESSION[$fmKey];
+            $flashes = $_SESSION[self::FLASH];
             assert(is_array($flashes));
-            $_SESSION[$fmKey] = [];
+            $_SESSION[self::FLASH] = [];
         } else {
             $key = 0;
             $keys = [];
             $flashes = [];
 
-            foreach ($_SESSION[$fmKey] as $flash) {
+            foreach ($_SESSION[self::FLASH] as $flash) {
                 assert(isset($flash['queue']));
                 assert(isset($flash['message']));
 
@@ -175,11 +175,11 @@ class Session
 
             foreach (array_reverse($keys) as $key) {
                 if (
-                    ($_SESSION[$fmKey] ?? null)
-                    && is_array($_SESSION[$fmKey])
+                    ($_SESSION[self::FLASH] ?? null)
+                    && is_array($_SESSION[self::FLASH])
                 ) {
-                    if (isset($_SESSION[$fmKey][$key])) {
-                        unset($_SESSION[$fmKey][$key]);
+                    if (isset($_SESSION[self::FLASH][$key])) {
+                        unset($_SESSION[self::FLASH][$key]);
                     }
                 }
             }
@@ -191,7 +191,7 @@ class Session
     public function hasFlashes(?string $queue = null): bool
     {
         /** @var array */
-        $messages = $_SESSION[$this->flashMessagesKey] ?? [];
+        $messages = $_SESSION[self::FLASH] ?? [];
 
         if ($queue) {
             return count(array_filter(
@@ -211,25 +211,25 @@ class Session
             'uri' => $uri,
             'expires' => time() + $expires,
         ];
-        $_SESSION[$this->rememberedUriKey] = $rememberedUri;
+        $_SESSION[self::REMEMBER] = $rememberedUri;
     }
 
     public function rememberedUri(): string
     {
         /** @var null|array{uri: string, expires: int} */
-        $rememberedUri = $_SESSION[$this->rememberedUriKey] ?? null;
+        $rememberedUri = $_SESSION[self::REMEMBER] ?? null;
 
         if ($rememberedUri) {
             if ($rememberedUri['expires'] > time()) {
                 $uri = $rememberedUri['uri'];
-                unset($_SESSION[$this->rememberedUriKey]);
+                unset($_SESSION[self::REMEMBER]);
 
                 if (filter_var($uri, FILTER_VALIDATE_URL)) {
                     return $uri;
                 }
             }
 
-            unset($_SESSION[$this->rememberedUriKey]);
+            unset($_SESSION[self::REMEMBER]);
         }
 
         return '/';

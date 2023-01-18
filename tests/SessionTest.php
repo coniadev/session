@@ -7,7 +7,6 @@ use Conia\Session\Session;
 
 beforeEach(function () {
     $this->session = new Session();
-    $this->session->start();
 });
 
 
@@ -19,6 +18,7 @@ afterEach(function () {
 
 
 test('Session set/has/get', function () {
+    $this->session->start();
     $this->session->set('Chuck', 'Schuldiner');
 
     expect($this->session->has('Chuck'))->toBe(true);
@@ -26,7 +26,13 @@ test('Session set/has/get', function () {
 });
 
 
+test('Set fails when uninitialized', function () {
+    $this->session->set('Chuck', 'Schuldiner');
+})->throws(RuntimeException::class, 'Session not started');
+
+
 test('Session unset', function () {
+    $this->session->start();
     $this->session->set('Chuck', 'Schuldiner');
 
     expect($this->session->get('Chuck'))->toBe('Schuldiner');
@@ -50,6 +56,7 @@ test('Session get default', function () {
 
 
 test('Flash messages all', function () {
+    $this->session->start();
     expect($this->session->hasFlashes())->toBe(false);
 
     $this->session->flash('Your existence is a script');
@@ -67,6 +74,7 @@ test('Flash messages all', function () {
 
 
 test('Flash messages queue', function () {
+    $this->session->start();
     expect($this->session->hasFlashes())->toBe(false);
 
     $this->session->flash('Your existence is a script');
@@ -80,6 +88,11 @@ test('Flash messages queue', function () {
     expect(count($flashes))->toBe(1);
     expect($flashes[0]['queue'])->toBe('default');
 });
+
+
+test('Flash messages fail when uninitialized', function () {
+    $this->session->flash('Your existence is a script');
+})->throws(RuntimeException::class, 'Session not started');
 
 
 test('Remember URI', function () {

@@ -115,14 +115,15 @@ class Session
         unset($_SESSION[$key]);
     }
 
+    public function active(): bool
+    {
+        return session_status() == PHP_SESSION_ACTIVE;
+    }
+
     public function regenerate(): void
     {
-        if (session_status() == PHP_SESSION_ACTIVE) {
-            // The session is always inactive when PHP_SAPI === 'cli'
-            // e. g. when tests are run
-            // @codeCoverageIgnoreStart
+        if ($this->active()) {
             session_regenerate_id(true);
-            // @codeCoverageIgnoreEnd
         }
     }
 

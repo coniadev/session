@@ -12,7 +12,9 @@ beforeEach(function () {
 
 
 afterEach(function () {
-    $this->session->forget();
+    if ($this->session->active()) {
+        $this->session->forget();
+    }
 });
 
 
@@ -93,8 +95,6 @@ test('Remember URI', function () {
 
 
 test('Session run start/forget', function () {
-    // Merely runs the code without effect.
-    // Can't be tested properly.
     $this->session->start();
     $this->session->set('Chuck', 'Schuldiner');
 
@@ -103,4 +103,13 @@ test('Session run start/forget', function () {
     $this->session->forget();
 
     expect($this->session->has('Chuck'))->toBe(false);
+});
+
+
+test('Regenerate ID', function () {
+    $this->session->start();
+    $id = session_id();
+    $this->session->regenerate();
+
+    expect(session_id())->not()->toBe($id);
 });

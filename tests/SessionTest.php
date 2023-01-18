@@ -2,15 +2,11 @@
 
 declare(strict_types=1);
 
-use Conia\Chuck\Exception\OutOfBoundsException;
-use Conia\Chuck\Session;
-use Conia\Chuck\Tests\Setup\TestCase;
-
-uses(TestCase::class);
-
+use Conia\Session\OutOfBoundsException;
+use Conia\Session\Session;
 
 test('Session set/has/get', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
     $session->set('Chuck', 'Schuldiner');
 
     expect($session->has('Chuck'))->toBe(true);
@@ -19,7 +15,7 @@ test('Session set/has/get', function () {
 
 
 test('Session unset', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
     $session->set('Chuck', 'Schuldiner');
 
     expect($session->get('Chuck'))->toBe('Schuldiner');
@@ -33,19 +29,19 @@ test('Session unset', function () {
 
 
 test('Session throws when missing', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
     $session->get('To exist in this world may be a mistake');
 })->throws(OutOfBoundsException::class, 'To exist in this world may be a mistake');
 
 
 test('Session get default', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
     expect($session->get('Rick', 'Rozz'))->toBe('Rozz');
 });
 
 
 test('Flash messages all', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
 
     expect($session->hasFlashes())->toBe(false);
 
@@ -64,7 +60,7 @@ test('Flash messages all', function () {
 
 
 test('Flash messages queue', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
 
     expect($session->hasFlashes())->toBe(false);
 
@@ -82,23 +78,22 @@ test('Flash messages queue', function () {
 
 
 test('Remember URI', function () {
-    $request = $this->request(url: '/albums');
-    $session = new Session($this->config()->app());
-    $session->rememberRequestUri($request);
+    $session = new Session();
+    $session->rememberUri('https://www.example.com/albums');
 
-    expect($session->getRememberedUri())->toBe('http://www.example.com/albums');
-    expect($session->getRememberedUri())->toBe('/');
+    expect($session->rememberedUri())->toBe('https://www.example.com/albums');
+    expect($session->rememberedUri())->toBe('/');
 
     // Test to return '/' when expired
-    $session->rememberRequestUri($request, -3600);
-    expect($session->getRememberedUri())->toBe('/');
+    $session->rememberUri('https://www.example.com/albums', -3600);
+    expect($session->rememberedUri())->toBe('/');
 });
 
 
 test('Session run start/forget/regenerate', function () {
     // Merely runs the code without effect.
     // Can't be tested properly.
-    $session = new Session($this->config()->app());
+    $session = new Session();
     $session->start();
     $session->set('Chuck', 'Schuldiner');
 

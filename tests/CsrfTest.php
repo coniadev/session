@@ -2,15 +2,11 @@
 
 declare(strict_types=1);
 
-use Conia\Chuck\Csrf;
-use Conia\Chuck\Session;
-use Conia\Chuck\Tests\Setup\TestCase;
-
-uses(TestCase::class);
-
+use Conia\Session\Csrf;
+use Conia\Session\Session;
 
 test('Csrf get creates token', function () {
-    $session = new Session($this->config()->app());
+    $session = new Session();
     $csrf = new Csrf();
     $token = $csrf->get();
 

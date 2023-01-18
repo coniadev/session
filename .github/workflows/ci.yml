@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup PHP extensions
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: curl, xml, zip
+
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Install packages with composer
+        run: composer install
+
+      - name: Run tests
+        run: ./vendor/bin/pest --ci --coverage --min=100
+
+      - name: Run Psalm
+        run: ./vendor/bin/psalm --output-format=github --shepherd
+
+      - name: Run PHP Code Sniffer
+        run: ./vendor/bin/phpcs -q --report=checkstyle src tests | ./vendor/bin/cs2pr
+
+  docs:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+      - run: pip install mkdocs-conia
+      - run: mkdocs gh-deploy --force

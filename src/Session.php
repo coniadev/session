@@ -6,6 +6,7 @@ namespace Conia\Session;
 
 use Conia\Session\OutOfBoundsException;
 use Conia\Session\RuntimeException;
+use SessionHandlerInterface;
 
 class Session
 {
@@ -15,6 +16,7 @@ class Session
     public function __construct(
         protected readonly string $name = '',
         protected readonly array $options = [],
+        protected readonly ?SessionHandlerInterface $handler = null,
     ) {
     }
 
@@ -24,6 +26,10 @@ class Session
             if (!headers_sent($file, $line)) {
                 if ($this->name) {
                     session_name($this->name);
+                }
+
+                if ($this->handler) {
+                    session_set_save_handler($this->handler, true);
                 }
 
                 session_cache_limiter('');

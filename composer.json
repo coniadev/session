@@ -11,6 +11,11 @@
             "Conia\\Session\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Conia\\Session\\Tests\\": "tests"
+        }
+    },
     "authors": [
         {
             "name": "ebene fünf GmbH"

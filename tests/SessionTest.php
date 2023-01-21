@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 use Conia\Session\OutOfBoundsException;
 use Conia\Session\Session;
+use Conia\Session\Tests\TestCase;
+
+uses(TestCase::class);
 
 beforeEach(function () {
     $this->session = new Session();
@@ -17,12 +20,14 @@ afterEach(function () {
 });
 
 
-test('Session set/has/get', function () {
+test('Session set/has/get/name/id', function () {
     $this->session->start();
     $this->session->set('Chuck', 'Schuldiner');
 
     expect($this->session->has('Chuck'))->toBe(true);
     expect($this->session->get('Chuck'))->toBe('Schuldiner');
+    expect($this->session->name())->toBe('PHPSESSID');
+    expect($this->session->id())->toMatch('/^[a-f0-9]+$/');
 });
 
 

@@ -48,8 +48,7 @@ class Session
     public function forget(): void
     {
         // Unset all of the session variables.
-        global $_SESSION;
-        $_SESSION = [];
+        session_unset(); // same as $_SESSION = [];
 
         // If it's desired to kill the session, also delete the session cookie.
         // Note: This will destroy the session, and not just the session data!
@@ -73,6 +72,11 @@ class Session
     public function name(): string
     {
         return session_name();
+    }
+
+    public function id(): string
+    {
+        return session_id();
     }
 
     /** @psalm-param non-empty-string $key */

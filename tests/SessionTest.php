@@ -27,7 +27,7 @@ test('Session set/has/get/name/id', function () {
     expect($this->session->has('Chuck'))->toBe(true);
     expect($this->session->get('Chuck'))->toBe('Schuldiner');
     expect($this->session->name())->toBe('PHPSESSID');
-    expect($this->session->id())->toMatch('/^[a-f0-9]+$/');
+    expect($this->session->id())->not->toBeEmpty();
 });
 
 

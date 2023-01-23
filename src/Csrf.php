@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Conia\Session;
 
+/** @psalm-api */
 class Csrf
 {
     public function __construct(

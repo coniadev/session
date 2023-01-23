@@ -8,6 +8,7 @@ use Conia\Session\OutOfBoundsException;
 use Conia\Session\RuntimeException;
 use SessionHandlerInterface;
 
+/** @psalm-api */
 class Session
 {
     public const FLASH = 'conia_flash_messages';
